@@ -1,7 +1,6 @@
-from typing import Tuple, List
+from typing import List
 
 from src.domain.entities import Participant
-from src.domain.exceptions import ParticipantNotFoundException
 from src.domain.interfaces import ParticipantDataProvider
 
 
@@ -10,37 +9,17 @@ class ParticipantInteractor:
     def __init__(self, data_provider: ParticipantDataProvider):
         self.dataProvider: ParticipantDataProvider = data_provider
 
-    def create_participant(self, p: Participant) -> Tuple[Participant | None, str | None]:
-        try:
-            participant = self.dataProvider.create_participant(p)
-        except Exception as e:
-            return None, 'failed to create participant'
-        return participant, None
+    def create_participant(self, p: Participant) -> Participant:
+        return self.dataProvider.create_participant(p)
 
-    def read_participant(self, pid: int) -> Tuple[Participant | None, str | None]:
-        try:
-            participant = self.dataProvider.get_participant(pid)
-        except ParticipantNotFoundException as e:
-            return None, str(e)
-        return participant, None
+    def read_participant(self, pid: int) -> Participant:
+        return self.dataProvider.get_participant(pid)
 
-    def read_participants(self, limit: int, offset: int) -> Tuple[List[Participant] | None, str | None]:
-        try:
-            participants = self.dataProvider.get_participants(limit, offset)
-        except Exception as e:
-            return None, 'failed to get participants'
-        return list(participants), None
+    def read_participants(self, limit: int, offset: int) -> List[Participant]:
+        return list(self.dataProvider.get_participants(limit, offset))
 
-    def update_participant(self, p: Participant) -> Tuple[Participant | None, str | None]:
-        try:
-            participant = self.dataProvider.update_participant(p)
-        except ParticipantNotFoundException as e:
-            return None, str(e)
-        return participant, None
+    def update_participant(self, p: Participant) -> Participant:
+        return self.dataProvider.update_participant(p)
 
-    def remove_participant(self, pid: int) -> Tuple[Participant | None, str | None]:
-        try:
-            participant = self.dataProvider.remove_participant(pid)
-        except ParticipantNotFoundException as e:
-            return None, str(e)
-        return participant, None
+    def remove_participant(self, pid: int) -> Participant:
+        return self.dataProvider.remove_participant(pid)
