@@ -1,3 +1,7 @@
 """ Exceptions """
 
 from .participant_not_found_exception import ParticipantNotFoundException
+from .category_not_found_exception import CategoryNotFoundException
+from .event_not_found_exception import EventNotFoundException
+from .participants_mismatch_exception import ParticipantsMismatchException
+from .categories_mismatch_exception import CategoriesMismatchException
