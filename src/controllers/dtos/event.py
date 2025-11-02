@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from src.domain.entities import Category, Event, Participant
-from src.dtos import CategoryDTO, ParticipantDTO
+from src.controllers.dtos import CategoryDTO, ParticipantDTO
 
 
 class EventDTO(BaseModel):
