@@ -1,13 +1,13 @@
 from typing import Tuple, List
 
-from src.entities import Participant
-from src.services.postgres.postgres import PgDataBase
+from src.domain.entities import Participant
+from src.domain.interfaces import ParticipantDataProvider
 
 
 class ParticipantInteractor:
 
-    def __init__(self):
-        self.dataProvider = PgDataBase()
+    def __init__(self, data_provider: ParticipantDataProvider):
+        self.dataProvider: ParticipantDataProvider = data_provider
 
     def create_participant(self, p: Participant) -> Tuple[Participant | None, str | None]:
         try:

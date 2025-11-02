@@ -1,10 +1,11 @@
 from typing import Dict, Iterator
 
-from src.entities import Participant
+from src.domain.entities import Participant
+from src.domain.interfaces import ParticipantDataProvider
 from src.library import singleton
 
 @singleton
-class PgDataBase:
+class PgDataBase(ParticipantDataProvider):
     pid_max: int = 0
     participants: Dict[int, Participant] = {}
 

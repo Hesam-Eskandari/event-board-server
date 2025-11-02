@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from src.entities import Participant
+from src.domain.entities import Participant
 
 
 class ParticipantDTO(BaseModel):
