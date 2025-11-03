@@ -1,4 +1,4 @@
-from src.controllers.server import run_server
+from src.controllers.server import Server
 
 if __name__ == "__main__":
-    run_server()
+    Server().run()
