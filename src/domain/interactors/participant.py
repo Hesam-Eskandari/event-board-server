@@ -1,4 +1,5 @@
 from typing import List
+from uuid import UUID
 
 from src.domain.entities import Participant
 from src.domain.interfaces import ParticipantDataProvider
@@ -12,7 +13,7 @@ class ParticipantInteractor:
     def create_participant(self, p: Participant) -> Participant:
         return self.dataProvider.create_participant(p)
 
-    def read_participant(self, pid: int) -> Participant:
+    def read_participant(self, pid: UUID) -> Participant:
         return self.dataProvider.get_participant(pid)
 
     def read_participants(self, limit: int, offset: int) -> List[Participant]:
@@ -21,5 +22,5 @@ class ParticipantInteractor:
     def update_participant(self, p: Participant) -> Participant:
         return self.dataProvider.update_participant(p)
 
-    def remove_participant(self, pid: int) -> Participant:
+    def remove_participant(self, pid: UUID) -> Participant:
         return self.dataProvider.remove_participant(pid)

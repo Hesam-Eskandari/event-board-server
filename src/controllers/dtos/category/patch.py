@@ -4,7 +4,7 @@ from src.domain.entities import Category
 
 
 class CategoryPatchDTO(BaseModel):
-    title: str | None
+    title: str | None = None
 
     def to_entity(self, old_entity: Category) -> Category:
         c = Category()

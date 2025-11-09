@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 from src.domain.entities import Category, Event, Participant
-from src.controllers.dtos import CategoryDTO, ParticipantDTO
+from src.controllers.dtos import CategoryDTO, ParticipantReadDTO
 
 
 class EventDTO(BaseModel):
@@ -11,7 +11,7 @@ class EventDTO(BaseModel):
     start: str
     end: str
     category: CategoryDTO
-    participant: ParticipantDTO
+    participant: ParticipantReadDTO
     id: int | None = None
 
     def to_entity(self, omit_id: bool = False) -> Event:
@@ -34,7 +34,7 @@ class EventDTO(BaseModel):
             start=event.start.isoformat(timespec='seconds').replace("+00:00", "Z"),
             end=event.end.isoformat(timespec='seconds').replace("+00:00", "Z"),
             category=CategoryDTO.from_entity(event.category),
-            participant = ParticipantDTO.from_entity(event.participant)
+            participant = ParticipantReadDTO.from_entity(event.participant)
 
         )
         return dto

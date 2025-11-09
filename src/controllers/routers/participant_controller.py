@@ -1,7 +1,10 @@
-from fastapi import APIRouter, HTTPException
+import uuid
+from typing import List
+
+from fastapi import APIRouter, HTTPException, status, Response
 from fastapi_utils.cbv import cbv
 
-from src.controllers.dtos import ParticipantDTO
+from src.controllers.dtos import ParticipantReadDTO, ParticipantCreateDTO, ParticipantPatchDTO
 from src.domain.exceptions import ParticipantNotFoundException
 from src.domain.interactors import ParticipantInteractor
 from src.services import PgDataBase
@@ -10,59 +13,78 @@ router = APIRouter()
 
 @cbv(router)
 class ParticipantController:
-    @router.get('/participants/')
+
+    @router.post('/participants/', status_code=status.HTTP_201_CREATED, response_model=ParticipantReadDTO)
+    async def create_participant(self, p: ParticipantCreateDTO):
+        participant = p.to_entity()
+        interactor = ParticipantInteractor(PgDataBase())
+        try:
+            participant_saved = interactor.create_participant(participant)
+        except ParticipantNotFoundException as err:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+        return ParticipantReadDTO.from_entity(participant_saved)
+
+    @router.get('/participants/', status_code=status.HTTP_200_OK, response_model=List[ParticipantReadDTO])
     async def read_participants(self, limit: int = 0, offset: int = 0):
         interactor = ParticipantInteractor(PgDataBase())
         try:
             participants = interactor.read_participants(limit, offset)
         except ParticipantNotFoundException as err:
-            raise HTTPException(status_code=404, detail=str(err))
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
         except Exception:
-            raise HTTPException(status_code=500, detail='unexpected error happened')
-        return [ParticipantDTO.from_entity(p) for p in participants]
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+        return [ParticipantReadDTO.from_entity(p) for p in participants]
 
-    @router.post('/participants/')
-    async def create_participant(self, p: ParticipantDTO):
-        participant = p.to_entity(True)
+    @router.get('/participants/{participant_id}', status_code=status.HTTP_200_OK, response_model=ParticipantReadDTO)
+    async def read_participant(self, participant_id: str):
+        try:
+            pid = uuid.UUID(participant_id)
+        except ValueError:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'invalid participant id {participant_id}')
         interactor = ParticipantInteractor(PgDataBase())
         try:
-            participant_saved = interactor.create_participant(participant)
+            participant = interactor.read_participant(pid)
         except ParticipantNotFoundException as err:
-            raise HTTPException(status_code=404, detail=str(err))
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
         except Exception:
-            raise HTTPException(status_code=500, detail='unexpected error happened')
-        return ParticipantDTO.from_entity(participant_saved)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+        return ParticipantReadDTO.from_entity(participant)
 
-    @router.get('/participants/{participant_id}')
-    async def read_participant(self, participant_id: int):
+    @router.patch('/participants/{participant_id}', status_code=status.HTTP_200_OK, response_model=ParticipantReadDTO)
+    async def patch_participant(self, participant_id: str,  p: ParticipantPatchDTO):
+        try:
+            pid = uuid.UUID(participant_id)
+        except ValueError:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'invalid participant id {participant_id}')
         interactor = ParticipantInteractor(PgDataBase())
         try:
-            participant = interactor.read_participant(participant_id)
+            old_entity = interactor.read_participant(pid)
         except ParticipantNotFoundException as err:
-            raise HTTPException(status_code=404, detail=str(err))
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
         except Exception:
-            raise HTTPException(status_code=500, detail='unexpected error happened')
-        return ParticipantDTO.from_entity(participant)
-
-    @router.put('/participants/')
-    async def update_participant(self, p: ParticipantDTO):
-        participant = p.to_entity(False)
-        interactor = ParticipantInteractor(PgDataBase())
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+        entity = p.to_entity(old_entity)
         try:
-            participant_saved = interactor.update_participant(participant)
+            _ = interactor.update_participant(entity)
         except ParticipantNotFoundException as err:
-            raise HTTPException(status_code=404, detail=str(err))
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
         except Exception:
-            raise HTTPException(status_code=500, detail='unexpected error happened')
-        return ParticipantDTO.from_entity(participant_saved)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+        return ParticipantReadDTO.from_entity(entity)
 
     @router.delete('/participants/{participant_id}')
-    async def delete_participant(self, participant_id: int):
+    async def delete_participant(self, participant_id: str):
+        try:
+            pid = uuid.UUID(participant_id)
+        except ValueError:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'invalid participant id {participant_id}')
         interactor = ParticipantInteractor(PgDataBase())
         try:
-            participant = interactor.remove_participant(participant_id)
+            participant = interactor.remove_participant(pid)
         except ParticipantNotFoundException as err:
-            raise HTTPException(status_code=404, detail=str(err))
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
         except Exception:
-            raise HTTPException(status_code=500, detail='unexpected error happened')
-        return ParticipantDTO.from_entity(participant)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+        return ParticipantReadDTO.from_entity(participant)

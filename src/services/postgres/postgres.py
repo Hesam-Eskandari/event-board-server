@@ -11,20 +11,17 @@ from src.services.postgres.models import EventModel
 
 @singleton
 class PgDataBase(ParticipantDataProvider, CategoryDataProvider, EventDataProvider):
-    pid_max: int = 0
     eid_max: int = 0
-    participants: Dict[int, Participant] = {}
+    participants: Dict[str, Participant] = {}
     categories: Dict[str, Category] = {}
     events: Dict[int, EventModel] = {}
 
     def create_participant(self, p: Participant) -> Participant:
-        p.id = self.pid_max
-        self.pid_max += 1
-        self.participants[p.id] = p
+        self.participants[str(p.id)] = p
         return p
 
-    def get_participant(self, pid: int) -> Participant:
-        existing = self.participants.get(pid)
+    def get_participant(self, pid: UUID) -> Participant:
+        existing = self.participants.get(str(pid))
         if existing is None:
             raise ParticipantNotFoundException(f'participant {pid} does not exist')
         return existing
@@ -34,17 +31,17 @@ class PgDataBase(ParticipantDataProvider, CategoryDataProvider, EventDataProvide
         return map(lambda e: e[1], filter(lambda e: offset <= e[0] < limit + offset, enumerate(iter(self.participants.values()))))
 
     def update_participant(self, p: Participant) -> Participant:
-        existing = self.participants.get(p.id)
+        existing = self.participants.get(str(p.id))
         if existing is None:
             raise ParticipantNotFoundException(f'participant {p.id} does not exist')
-        self.participants[p.id] = p
+        self.participants[str(p.id)] = p
         return p
 
-    def remove_participant(self, pid: int) -> Participant:
-        existing = self.participants.get(pid)
+    def remove_participant(self, pid: UUID) -> Participant:
+        existing = self.participants.get(str(pid))
         if existing is None:
             raise ParticipantNotFoundException(f'participant {pid} does not exist')
-        del self.participants[pid]
+        del self.participants[str(pid)]
         return existing
 
     def create_category(self, c: Category) -> Category:

@@ -1,5 +1,8 @@
+from uuid import UUID
+
+
 class Participant:
-    id: int | None
+    id: UUID
     firstname: str
     lastname: str
     image_url: str
