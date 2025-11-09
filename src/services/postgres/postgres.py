@@ -1,4 +1,5 @@
 from typing import Dict, Iterator
+from uuid import UUID
 
 from src.domain.entities import Participant, Category, Event
 from src.domain.exceptions import (
@@ -11,10 +12,9 @@ from src.services.postgres.models import EventModel
 @singleton
 class PgDataBase(ParticipantDataProvider, CategoryDataProvider, EventDataProvider):
     pid_max: int = 0
-    cid_max: int = 0
     eid_max: int = 0
     participants: Dict[int, Participant] = {}
-    categories: Dict[int, Category] = {}
+    categories: Dict[str, Category] = {}
     events: Dict[int, EventModel] = {}
 
     def create_participant(self, p: Participant) -> Participant:
@@ -48,13 +48,11 @@ class PgDataBase(ParticipantDataProvider, CategoryDataProvider, EventDataProvide
         return existing
 
     def create_category(self, c: Category) -> Category:
-        c.id = self.cid_max
-        self.cid_max += 1
-        self.categories[c.id] = c
+        self.categories[str(c.id)] = c
         return c
 
-    def get_category(self, cid: int) -> Category:
-        existing = self.categories.get(cid)
+    def get_category(self, cid: UUID) -> Category:
+        existing = self.categories.get(str(cid))
         if existing is None:
             raise CategoryNotFoundException(f'category {cid} does not exist')
         return existing
@@ -65,17 +63,17 @@ class PgDataBase(ParticipantDataProvider, CategoryDataProvider, EventDataProvide
                    filter(lambda e: offset <= e[0] < limit + offset, enumerate(iter(self.categories.values()))))
 
     def update_category(self, c: Category) -> Category:
-        existing = self.categories.get(c.id)
+        existing = self.categories.get(str(c.id))
         if existing is None:
             raise CategoryNotFoundException(f'category {c.id} does not exist')
-        self.categories[c.id] = c
-        return c
+        self.categories[str(c.id)] = c
+        return existing
 
-    def remove_category(self, cid: int) -> Category:
-        existing = self.categories.get(cid)
+    def remove_category(self, cid: UUID) -> Category:
+        existing = self.categories.get(str(cid))
         if existing is None:
             raise CategoryNotFoundException(f'category {cid} does not exist')
-        del self.categories[cid]
+        del self.categories[str(cid)]
         return existing
 
     def create_event(self, e: Event) -> Event:

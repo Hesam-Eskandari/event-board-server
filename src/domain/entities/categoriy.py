@@ -1,5 +1,8 @@
+from uuid import UUID
+
+
 class Category:
-    id: int | None
+    id: UUID
     title: str
 
     def __eq__(self, other: 'Category') -> bool:

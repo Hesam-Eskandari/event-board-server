@@ -1,7 +1,9 @@
-from fastapi import APIRouter, HTTPException
+import uuid
+
+from fastapi import APIRouter, HTTPException, status, Response
 from fastapi_utils.cbv import cbv
 
-from src.controllers.dtos import CategoryDTO
+from src.controllers.dtos import CategoryReadDTO, CategoryCreateDTO, CategoryPatchDTO
 from src.domain.exceptions import CategoryNotFoundException
 from src.domain.interactors import CategoryInteractor
 from src.services import PgDataBase
@@ -16,53 +18,74 @@ class CategoryController:
         try:
             categories = interactor.get_categories(limit, offset)
         except CategoryNotFoundException as err:
-            raise HTTPException(status_code=404, detail=str(err))
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
         except Exception:
-            raise HTTPException(status_code=500, detail='unexpected error happened')
-        return [CategoryDTO.from_entity(category) for category in categories]
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+        return [CategoryReadDTO.from_entity(category) for category in categories]
 
-    @router.get('/categories/{category_id}')
-    async def read_category(self, category_id: int):
+    @router.get('/categories/{category_id}', status_code=status.HTTP_200_OK, response_model=CategoryReadDTO)
+    async def read_category(self, category_id: str):
+        try:
+            cid = uuid.UUID(category_id)
+        except ValueError:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='invalid category id')
+
         interactor = CategoryInteractor(PgDataBase())
         try:
-            category = interactor.get_category(category_id)
+            category = interactor.get_category(cid)
         except CategoryNotFoundException as err:
-            raise HTTPException(status_code=404, detail=str(err))
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
         except Exception:
-            raise HTTPException(status_code=500, detail='unexpected error happened')
-        return CategoryDTO.from_entity(category)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+        return CategoryReadDTO.from_entity(category)
 
-    @router.post('/categories/')
-    async def create_category(self, c: CategoryDTO):
-        category = c.to_entity(True)
+    @router.post('/categories/', status_code=status.HTTP_201_CREATED, response_model=CategoryReadDTO)
+    async def create_category(self, c: CategoryCreateDTO):
+        category = c.to_entity()
         interactor = CategoryInteractor(PgDataBase())
         try:
             category_saved = interactor.create_category(category)
         except CategoryNotFoundException as err:
-            raise HTTPException(status_code=404, detail=str(err))
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
         except Exception:
-            raise HTTPException(status_code=500, detail='unexpected error happened')
-        return CategoryDTO.from_entity(category_saved)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+        return CategoryReadDTO.from_entity(category_saved)
 
-    @router.delete('/categories/{category_id}')
-    async def delete_category(self, category_id: int):
+    @router.delete('/categories/{category_id}', status_code=status.HTTP_204_NO_CONTENT)
+    async def delete_category(self, category_id: str):
+        try:
+            cid = uuid.UUID(category_id)
+        except ValueError:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='invalid category id')
+
         interactor = CategoryInteractor(PgDataBase())
         try:
-            category_saved = interactor.remove_category(category_id)
+            _ = interactor.remove_category(cid)
         except CategoryNotFoundException as err:
-            raise HTTPException(status_code=404, detail=str(err))
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
         except Exception:
-            raise HTTPException(status_code=500, detail='unexpected error happened')
-        return CategoryDTO.from_entity(category_saved)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-    @router.put('/categories/')
-    async def update_category(self, c: CategoryDTO):
-        category = c.to_entity(False)
+    @router.patch('/categories/{category_id}', status_code=status.HTTP_200_OK, response_model=CategoryReadDTO)
+    async def patch_category(self, category_id: str, dto: CategoryPatchDTO):
+        try:
+            cid = uuid.UUID(category_id)
+        except ValueError:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='invalid category id')
         interactor = CategoryInteractor(PgDataBase())
         try:
-            category_saved = interactor.update_category(category)
+            old_entity = interactor.get_category(cid)
         except CategoryNotFoundException as err:
-            raise HTTPException(status_code=404, detail=str(err))
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
         except Exception:
-            raise HTTPException(status_code=500, detail='unexpected error happened')
-        return CategoryDTO.from_entity(category_saved)
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+
+        entity = dto.to_entity(old_entity)
+        try:
+            _ = interactor.update_category(entity)
+        except CategoryNotFoundException as err:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+        return CategoryReadDTO.from_entity(entity)
