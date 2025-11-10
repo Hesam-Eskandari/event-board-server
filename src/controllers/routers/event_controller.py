@@ -130,16 +130,18 @@ class EventController:
         except Exception:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
 
-        event = dto.to_entity(old_entity, category, participant)
+        entity = dto.to_entity(old_entity, category, participant)
+        if entity == old_entity:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='event update failed. no field is changed')
         try:
-            _ = interactor.update_event(event)
+            _ = interactor.update_event(entity)
         except (EventNotFoundException, CategoryNotFoundException, ParticipantNotFoundException) as err:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
         except (CategoriesMismatchException, ParticipantsMismatchException) as err:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
         except Exception:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
-        return EventReadDTO.from_entity(event)
+        return EventReadDTO.from_entity(entity)
 
     @router.delete('/events/{event_id}', status_code=status.HTTP_204_NO_CONTENT)
     async def delete_event(self, event_id: str):

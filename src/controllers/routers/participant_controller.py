@@ -66,6 +66,8 @@ class ParticipantController:
         except Exception:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
         entity = p.to_entity(old_entity)
+        if entity == old_entity:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='participant update failed. no field is changed')
         try:
             _ = interactor.update_participant(entity)
         except ParticipantNotFoundException as err:

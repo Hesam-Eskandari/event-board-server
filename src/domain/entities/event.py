@@ -12,16 +12,10 @@ class Event:
     category: Category
     participant: Participant
 
-    def __repr__(self) -> str:
-        print('__repr__ is called')
-        return self.__str__()
-
-    def __str__(self) -> str:
-        return f'{{\n'\
-                f'  id: {self.id}\n'\
-                f'  title: {self.title}\n'\
-                f'  start: {self.start}\n'\
-                f'  end: {self.end}\n'\
-                f'  category: {self.category}\n'\
-                f'  participant: {self.participant}\n'\
-                f'}}\n'
+    def __eq__(self, other: 'Event') -> bool:
+        return self.id == other.id \
+            and self.title == other.title \
+            and self.start == other.start \
+            and self.end == other.end \
+            and self.category == other.category \
+            and self.participant == other.participant
