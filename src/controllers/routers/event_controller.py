@@ -23,8 +23,11 @@ class EventController:
         category_interactor = CategoryInteractor(PgDataBase())
         participant_interactor = ParticipantInteractor(PgDataBase())
 
-        category: Category = await CategoryErrorHandler.handle_read_async(category_interactor.get_category(cid))
-        participant: Participant = await ParticipantErrorHandler.handle_read_async(participant_interactor.get_participant(pid))
+        category_async = category_interactor.get_category(cid)
+        participant_async = participant_interactor.get_participant(pid)
+
+        category: Category = await CategoryErrorHandler.handle_read_async(category_async)
+        participant: Participant = await ParticipantErrorHandler.handle_read_async(participant_async)
 
         event: Event = dto.to_entity(category, participant)
         interactor = EventInteractor(PgDataBase())

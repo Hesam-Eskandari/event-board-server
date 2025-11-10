@@ -43,7 +43,7 @@ class ParticipantController:
         _ = await ParticipantErrorHandler.handle_update_async(interactor.update_participant(entity))
         return ParticipantReadDTO.from_entity(entity)
 
-    @router.delete('/participants/{participant_id}', status_code=status.HTTP_204)
+    @router.delete('/participants/{participant_id}', status_code=status.HTTP_204_NO_CONTENT)
     async def delete_participant(self, participant_id: str):
         pid = UUIDErrorHandler.handle_str_to_uuid(participant_id, f'invalid participant id {participant_id}')
         interactor = ParticipantInteractor(PgDataBase())
