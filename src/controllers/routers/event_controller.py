@@ -1,13 +1,12 @@
-import uuid
 from typing import Iterator, List
 
 from fastapi import APIRouter, HTTPException, status, Response
 from fastapi_utils.cbv import cbv
 
 from src.controllers.dtos import EventReadDTO, EventCreateDTO, EventPatchDTO
-from src.domain.entities import Event
-from src.domain.exceptions import EventNotFoundException, CategoryNotFoundException, ParticipantNotFoundException, \
-    ParticipantsMismatchException, CategoriesMismatchException
+from src.controllers.routers import CategoryErrorHandler, EventErrorHandler, UUIDErrorHandler
+from src.controllers.routers.error_handlers import ParticipantErrorHandler
+from src.domain.entities import Event, Category, Participant
 from src.domain.interactors import EventInteractor, CategoryInteractor, ParticipantInteractor
 from src.services import PgDataBase
 
@@ -18,142 +17,61 @@ class EventController:
 
     @router.post('/events/', status_code=status.HTTP_201_CREATED, response_model=EventReadDTO)
     async def create_event(self, dto: EventCreateDTO):
-        try:
-            cid = uuid.UUID(dto.categoryId)
-        except ValueError:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid category id")
-
-        try:
-            pid = uuid.UUID(dto.participantId)
-        except ValueError:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid participant id")
+        cid = UUIDErrorHandler.handle_str_to_uuid(dto.categoryId, "invalid category id")
+        pid = UUIDErrorHandler.handle_str_to_uuid(dto.participantId, "invalid participant id")
 
         category_interactor = CategoryInteractor(PgDataBase())
-        try:
-            category = category_interactor.get_category(cid)
-        except CategoryNotFoundException:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="category not found")
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
-
         participant_interactor = ParticipantInteractor(PgDataBase())
-        try:
-            participant = participant_interactor.read_participant(pid)
-        except ParticipantNotFoundException:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="participant not found")
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
 
+        category: Category = await CategoryErrorHandler.handle_read_async(category_interactor.get_category(cid))
+        participant: Participant = await ParticipantErrorHandler.handle_read_async(participant_interactor.get_participant(pid))
 
-        event = dto.to_entity(category, participant)
+        event: Event = dto.to_entity(category, participant)
         interactor = EventInteractor(PgDataBase())
-        try:
-            _ = interactor.create_event(event)
-        except (EventNotFoundException, CategoryNotFoundException, ParticipantNotFoundException) as err:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
-        except (CategoriesMismatchException, ParticipantsMismatchException) as err:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+        _ = await EventErrorHandler.handle_create_async(interactor.create_event(event))
         return EventReadDTO.from_entity(event)
 
     @router.get('/events/', status_code=status.HTTP_200_OK, response_model=List[EventReadDTO])
     async def read_events(self, limit: int = 0, offset: int = 0):
         interactor = EventInteractor(PgDataBase())
-        try:
-            events: Iterator[Event] = interactor.get_events(limit, offset)
-        except EventNotFoundException as err:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
-        es = list(events)
-        print('[')
-        for e in es:
-            print(e)
-            print(',')
-        print(']')
-        return [EventReadDTO.from_entity(event) for event in es]
+        events: Iterator[Event] = await EventErrorHandler.handle_read_all_async(interactor.get_events(limit, offset))
+        return [EventReadDTO.from_entity(event) for event in events]
 
     @router.get('/events/{event_id}')
     async def read_event(self, event_id: str):
-        try:
-            eid = uuid.UUID(event_id)
-        except ValueError:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f'invalid event id: {event_id}')
+        eid = UUIDErrorHandler.handle_str_to_uuid(event_id, f'invalid event id: {event_id}')
         interactor = EventInteractor(PgDataBase())
-        try:
-            event = interactor.get_event(eid)
-        except EventNotFoundException as err:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+        event: Event  = await EventErrorHandler.handle_read_async(interactor.get_event(eid))
         return EventReadDTO.from_entity(event)
 
     @router.patch('/events/{event_id}', status_code=status.HTTP_200_OK, response_model=EventReadDTO)
     async def patch_event(self, event_id: str, dto: EventPatchDTO):
-        try:
-            cid = uuid.UUID(dto.categoryId)
-        except ValueError:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid category id")
-
-        try:
-            pid = uuid.UUID(dto.participantId)
-        except ValueError:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid participant id")
-
-        try:
-            eid = uuid.UUID(event_id)
-        except ValueError:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid event id")
+        cid = UUIDErrorHandler.handle_str_to_uuid(dto.categoryId, "invalid category id")
+        pid = UUIDErrorHandler.handle_str_to_uuid(dto.participantId, "invalid participant id")
+        eid = UUIDErrorHandler.handle_str_to_uuid(event_id, "invalid event id")
 
         category_interactor = CategoryInteractor(PgDataBase())
-        try:
-            category = category_interactor.get_category(cid)
-        except CategoryNotFoundException:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="category not found")
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
-
         participant_interactor = ParticipantInteractor(PgDataBase())
-        try:
-            participant = participant_interactor.read_participant(pid)
-        except ParticipantNotFoundException:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="participant not found")
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+        event_interactor = EventInteractor(PgDataBase())
 
-        interactor = EventInteractor(PgDataBase())
-        try:
-            old_entity = interactor.get_event(eid)
-        except EventNotFoundException as err:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+        category_async = category_interactor.get_category(cid)
+        participant_async = participant_interactor.get_participant(pid)
+        old_entity_async = event_interactor.get_event(eid)
 
-        entity = dto.to_entity(old_entity, category, participant)
+        category = await CategoryErrorHandler.handle_read_async(category_async)
+        participant = await ParticipantErrorHandler.handle_read_async(participant_async)
+        old_entity = await EventErrorHandler.handle_read_async(old_entity_async)
+
+        entity: Event  = dto.to_entity(old_entity, category, participant)
         if entity == old_entity:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='event update failed. no field is changed')
-        try:
-            _ = interactor.update_event(entity)
-        except (EventNotFoundException, CategoryNotFoundException, ParticipantNotFoundException) as err:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
-        except (CategoriesMismatchException, ParticipantsMismatchException) as err:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+
+        _ = await EventErrorHandler.handle_update_async(event_interactor.update_event(entity))
         return EventReadDTO.from_entity(entity)
 
     @router.delete('/events/{event_id}', status_code=status.HTTP_204_NO_CONTENT)
     async def delete_event(self, event_id: str):
-        try:
-            eid = uuid.UUID(event_id)
-        except ValueError:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid event id")
+        eid = UUIDErrorHandler.handle_str_to_uuid(event_id, f'invalid event id: {event_id}')
         interactor = EventInteractor(PgDataBase())
-        try:
-            _ = interactor.remove_event(eid)
-        except EventNotFoundException as err:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
+        _ = await EventErrorHandler.handle_delete_async(interactor.remove_event(eid))
         return Response(status_code=status.HTTP_204_NO_CONTENT)

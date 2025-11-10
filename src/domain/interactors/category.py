@@ -9,17 +9,17 @@ class CategoryInteractor:
     def __init__(self, data_provider: CategoryDataProvider):
         self.data_provider = data_provider
 
-    def create_category(self, c: Category) -> Category:
+    async def create_category(self, c: Category) -> Category:
         return self.data_provider.create_category(c)
 
-    def get_category(self, cid: UUID) -> Category:
+    async def get_category(self, cid: UUID) -> Category:
         return self.data_provider.get_category(cid)
 
-    def get_categories(self, limit: int, offset: int = 0) -> Iterator[Category]:
+    async def get_categories(self, limit: int, offset: int = 0) -> Iterator[Category]:
         return self.data_provider.get_categories(limit, offset)
 
-    def update_category(self, c: Category) -> Category:
+    async def update_category(self, c: Category) -> Category:
         return  self.data_provider.update_category(c)
 
-    def remove_category(self, cid: UUID) -> Category:
+    async def remove_category(self, cid: UUID) -> Category:
         return self.data_provider.remove_category(cid)
