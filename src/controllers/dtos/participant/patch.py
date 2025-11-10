@@ -1,9 +1,8 @@
-from pydantic import BaseModel
-
+from src.controllers.dtos.base import BaseDTO
 from src.domain.entities import Participant
 
 
-class ParticipantPatchDTO(BaseModel):
+class ParticipantPatchDTO(BaseDTO):
     firstname: str | None = None
     lastname: str | None = None
     imageUrl: str | None = None

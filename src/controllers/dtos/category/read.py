@@ -1,10 +1,8 @@
-import uuid
-from pydantic import BaseModel
-
+from src.controllers.dtos.base import BaseDTO
 from src.domain.entities import Category
 
 
-class CategoryReadDTO(BaseModel):
+class CategoryReadDTO(BaseDTO):
     title: str
     id: str
 

@@ -1,10 +1,10 @@
-from pydantic import BaseModel
-
+from src.controllers.dtos.base import BaseDTO
 from src.domain.entities import  Event
+
 from src.controllers.dtos import CategoryReadDTO, ParticipantReadDTO
 
 
-class EventReadDTO(BaseModel):
+class EventReadDTO(BaseDTO):
     id: str
     title: str
     start: str

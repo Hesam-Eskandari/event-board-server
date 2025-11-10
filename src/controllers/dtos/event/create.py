@@ -1,11 +1,10 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel
-
+from src.controllers.dtos.base import BaseDTO
 from src.domain.entities import Category, Event, Participant
 
-class EventCreateDTO(BaseModel):
+class EventCreateDTO(BaseDTO):
     title: str
     start: str
     end: str

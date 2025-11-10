@@ -1,11 +1,10 @@
 import uuid
 
-from pydantic import BaseModel
-
+from src.controllers.dtos.base import BaseDTO
 from src.domain.entities import Participant
 
 
-class ParticipantCreateDTO(BaseModel):
+class ParticipantCreateDTO(BaseDTO):
     firstname: str
     lastname: str
     imageUrl: str

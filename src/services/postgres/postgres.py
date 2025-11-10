@@ -73,7 +73,6 @@ class PgDataBase(ParticipantDataProvider, CategoryDataProvider, EventDataProvide
 
     def create_event(self, e: Event) -> Event:
         self.events[str(e.id)] = e
-        print(self.events)
         return e
 
     def get_event(self, eid: UUID) -> Event:
@@ -83,7 +82,6 @@ class PgDataBase(ParticipantDataProvider, CategoryDataProvider, EventDataProvide
         return event
 
     def get_events(self, limit: int, offset: int = 0) -> Iterator[Event]:
-        print("DB:", self.events)
         limit = limit if limit > 0 else len(self.events)
         return map(lambda e: e[1],
                    filter(lambda e: offset <= e[0] < limit + offset, enumerate(iter(self.events.values()))))

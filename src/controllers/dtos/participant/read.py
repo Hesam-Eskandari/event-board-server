@@ -1,9 +1,8 @@
-from pydantic import BaseModel
-
+from src.controllers.dtos.base import BaseDTO
 from src.domain.entities import Participant
 
 
-class ParticipantReadDTO(BaseModel):
+class ParticipantReadDTO(BaseDTO):
     firstname: str
     lastname: str
     imageUrl: str

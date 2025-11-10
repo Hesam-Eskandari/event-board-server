@@ -1,11 +1,10 @@
 from datetime import datetime
 
-from pydantic import BaseModel
-
+from src.controllers.dtos.base import BaseDTO
 from src.domain.entities import Category, Event, Participant
 
 
-class EventPatchDTO(BaseModel):
+class EventPatchDTO(BaseDTO):
     title: str | None = None
     start: str | None = None
     end: str | None = None

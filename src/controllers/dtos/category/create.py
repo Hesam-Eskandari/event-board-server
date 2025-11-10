@@ -1,10 +1,10 @@
 import uuid
-from pydantic import BaseModel
 
+from src.controllers.dtos.base import BaseDTO
 from src.domain.entities import Category
 
 
-class CategoryCreateDTO(BaseModel):
+class CategoryCreateDTO(BaseDTO):
     title: str
 
     def to_entity(self) -> Category:

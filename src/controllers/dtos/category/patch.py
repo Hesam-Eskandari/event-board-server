@@ -1,9 +1,8 @@
-from pydantic import BaseModel
-
+from src.controllers.dtos.base import BaseDTO
 from src.domain.entities import Category
 
 
-class CategoryPatchDTO(BaseModel):
+class CategoryPatchDTO(BaseDTO):
     title: str | None = None
 
     def to_entity(self, old_entity: Category) -> Category:
