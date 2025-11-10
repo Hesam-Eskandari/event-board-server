@@ -6,15 +6,13 @@ from src.domain.exceptions import (
     ParticipantNotFoundException, CategoryNotFoundException, EventNotFoundException)
 from src.domain.interfaces import ParticipantDataProvider, CategoryDataProvider, EventDataProvider
 from src.library import singleton
-from src.services.postgres.models import EventModel
 
 
 @singleton
 class PgDataBase(ParticipantDataProvider, CategoryDataProvider, EventDataProvider):
-    eid_max: int = 0
     participants: Dict[str, Participant] = {}
     categories: Dict[str, Category] = {}
-    events: Dict[int, EventModel] = {}
+    events: Dict[str, Event] = {}
 
     def create_participant(self, p: Participant) -> Participant:
         self.participants[str(p.id)] = p
@@ -74,36 +72,32 @@ class PgDataBase(ParticipantDataProvider, CategoryDataProvider, EventDataProvide
         return existing
 
     def create_event(self, e: Event) -> Event:
-        e.id = self.eid_max
-        model = EventModel.from_entity(e, self.categories, self.participants)
-        self.eid_max += 1
-        self.events[model.id] = model
+        self.events[str(e.id)] = e
+        print(self.events)
         return e
 
-    def get_event(self, eid: int) -> Event:
-        model = self.events.get(eid)
-        if model is None:
+    def get_event(self, eid: UUID) -> Event:
+        event = self.events.get(str(eid))
+        if event is None:
             raise EventNotFoundException(f'event with id {eid} does not exist')
-        event = model.to_entity(categories=self.categories, participants=self.participants)
         return event
 
     def get_events(self, limit: int, offset: int = 0) -> Iterator[Event]:
+        print("DB:", self.events)
         limit = limit if limit > 0 else len(self.events)
-        models: Iterator[EventModel] = map(lambda e: e[1], filter(lambda e: offset <= e[0] < limit + offset, enumerate(iter(self.events.values()))))
-        return map(lambda m: m.to_entity(categories=self.categories, participants=self.participants), models)
+        return map(lambda e: e[1],
+                   filter(lambda e: offset <= e[0] < limit + offset, enumerate(iter(self.events.values()))))
 
     def update_event(self, e: Event) -> Event:
-        existing = self.events.get(e.id)
+        existing = self.events.get(str(e.id))
         if existing is None:
             raise EventNotFoundException(f'event with id {e.id} does not exist')
-        model = EventModel.from_entity(e, self.categories, self.participants)
-        self.events[e.id] = model
+        self.events[str(e.id)] = e
         return e
 
-    def remove_event(self, eid: int) -> Event:
-        existing = self.events.get(eid)
+    def remove_event(self, eid: UUID) -> Event:
+        existing = self.events.get(str(eid))
         if existing is None:
             raise EventNotFoundException(f'event with id {eid} does not exist')
-        del self.events[eid]
-        event = existing.to_entity(categories=self.categories, participants=self.participants)
-        return event
+        del self.events[str(eid)]
+        return existing
