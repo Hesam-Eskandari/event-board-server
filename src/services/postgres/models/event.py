@@ -1,3 +1,5 @@
+from typing import Any
+
 from sqlalchemy import Column, Boolean, DateTime, UUID, String, ForeignKey, func
 from sqlalchemy.orm import relationship
 
@@ -25,8 +27,8 @@ class EventModel(Base):
         model.title = entity.title
         model.start = entity.start
         model.end = entity.end
-        model.category = entity.category
-        model.participant = entity.participant
+        model.category_id = entity.category.id
+        model.participant_id = entity.participant.id
         model.created_at = entity.created_at
         return model
 
@@ -42,3 +44,6 @@ class EventModel(Base):
         entity.participant = participant
         entity.created_at = self.created_at
         return entity
+
+    def to_dict(self, exclude_id: bool=False, exclude_fields: list[str] = None) -> dict[str, Any]:
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns if not exclude_id or c.name != "id" and c.name not in exclude_fields}

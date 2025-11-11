@@ -1,4 +1,4 @@
-from typing import Coroutine, Any, Iterator
+from typing import Coroutine, Any, AsyncGenerator
 
 from fastapi import HTTPException, status
 
@@ -29,14 +29,14 @@ class EventErrorHandler:
         return event
 
     @staticmethod
-    async def handle_read_all_async(events_async: Coroutine[Any, Any, Iterator[Event]]) -> Iterator[Event]:
+    async def handle_read_all_async(events_async: AsyncGenerator[Event, None]) -> AsyncGenerator[Event, None]:
         try:
-            events: Iterator[Event] = await events_async
+            async for event in events_async:
+                yield event
         except EventNotFoundException as err:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
         except Exception:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
-        return events
 
     @staticmethod
     async def handle_update_async(event_async: Coroutine[Any, Any, Event]) -> Event:
