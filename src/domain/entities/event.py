@@ -11,6 +11,7 @@ class Event:
     end: datetime
     category: Category
     participant: Participant
+    created_at: datetime
 
     def __eq__(self, other: 'Event') -> bool:
         return self.id == other.id \

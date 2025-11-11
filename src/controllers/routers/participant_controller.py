@@ -22,8 +22,8 @@ class ParticipantController:
     @router.get('/participants/', status_code=status.HTTP_200_OK, response_model=List[ParticipantReadDTO])
     async def read_participants(self, limit: int = 0, offset: int = 0):
         interactor = ParticipantInteractor(DataBaseMock())
-        participants = await ParticipantErrorHandler.handle_read_all_async(interactor.get_participants(limit, offset))
-        return [ParticipantReadDTO.from_entity(p) for p in participants]
+        return [ParticipantReadDTO.from_entity(participant) async for participant in \
+                ParticipantErrorHandler.handle_read_all_async(interactor.get_participants(limit, offset))]
 
     @router.get('/participants/{participant_id}', status_code=status.HTTP_200_OK, response_model=ParticipantReadDTO)
     async def read_participant(self, participant_id: str):

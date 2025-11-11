@@ -19,4 +19,5 @@ class EventPatchDTO(BaseDTO):
         entity.participant = p if self.participantId is not None else old_entity.participant
         entity.start = datetime.fromisoformat(self.start.replace('Z', '+00:00')) if self.start is not None else old_entity.start
         entity.end = datetime.fromisoformat(self.end.replace('Z', '+00:00')) if self.end is not None else old_entity.end
+        entity.created_at = old_entity.created_at
         return entity

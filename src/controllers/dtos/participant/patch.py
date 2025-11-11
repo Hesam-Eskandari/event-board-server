@@ -13,4 +13,5 @@ class ParticipantPatchDTO(BaseDTO):
         p.lastname = self.lastname if self.lastname is not None else old_entity.lastname
         p.image_url = self.imageUrl if self.imageUrl is not None else old_entity.image_url
         p.id = old_entity.id
+        p.created_at = old_entity.created_at
         return p

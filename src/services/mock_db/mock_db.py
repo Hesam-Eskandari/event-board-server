@@ -14,57 +14,57 @@ class DataBaseMock(ParticipantDataProvider, CategoryDataProvider, EventDataProvi
     categories: Dict[str, Category] = {}
     events: Dict[str, Event] = {}
 
-    def create_participant(self, p: Participant) -> Participant:
+    async def create_participant(self, p: Participant) -> Participant:
         self.participants[str(p.id)] = p
         return p
 
-    def get_participant(self, pid: UUID) -> Participant:
+    async def get_participant(self, pid: UUID) -> Participant:
         existing = self.participants.get(str(pid))
         if existing is None:
             raise ParticipantNotFoundException(f'participant {pid} does not exist')
         return existing
 
-    def get_participants(self, limit: int, offset: int = 0) -> Iterator[Participant]:
+    async def get_participants(self, limit: int, offset: int = 0) -> Iterator[Participant]:
         limit = limit if limit > 0 else len(self.participants)
         return map(lambda e: e[1], filter(lambda e: offset <= e[0] < limit + offset, enumerate(iter(self.participants.values()))))
 
-    def update_participant(self, p: Participant) -> Participant:
+    async def update_participant(self, p: Participant) -> Participant:
         existing = self.participants.get(str(p.id))
         if existing is None:
             raise ParticipantNotFoundException(f'participant {p.id} does not exist')
         self.participants[str(p.id)] = p
         return p
 
-    def remove_participant(self, pid: UUID) -> Participant:
+    async def remove_participant(self, pid: UUID) -> Participant:
         existing = self.participants.get(str(pid))
         if existing is None:
             raise ParticipantNotFoundException(f'participant {pid} does not exist')
         del self.participants[str(pid)]
         return existing
 
-    def create_category(self, c: Category) -> Category:
+    async def create_category(self, c: Category) -> Category:
         self.categories[str(c.id)] = c
         return c
 
-    def get_category(self, cid: UUID) -> Category:
+    async def get_category(self, cid: UUID) -> Category:
         existing = self.categories.get(str(cid))
         if existing is None:
             raise CategoryNotFoundException(f'category {cid} does not exist')
         return existing
 
-    def get_categories(self, limit: int, offset: int = 0) -> Iterator[Category]:
+    async def get_categories(self, limit: int, offset: int = 0) -> Iterator[Category]:
         limit = limit if limit > 0 else len(self.categories)
         return map(lambda e: e[1],
                    filter(lambda e: offset <= e[0] < limit + offset, enumerate(iter(self.categories.values()))))
 
-    def update_category(self, c: Category) -> Category:
+    async def update_category(self, c: Category) -> Category:
         existing = self.categories.get(str(c.id))
         if existing is None:
             raise CategoryNotFoundException(f'category {c.id} does not exist')
         self.categories[str(c.id)] = c
         return existing
 
-    def remove_category(self, cid: UUID) -> Category:
+    async def remove_category(self, cid: UUID) -> Category:
         existing = self.categories.get(str(cid))
         if existing is None:
             raise CategoryNotFoundException(f'category {cid} does not exist')

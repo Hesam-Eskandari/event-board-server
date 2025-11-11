@@ -1,4 +1,4 @@
-from typing import Iterator
+from typing import Iterator, AsyncGenerator, AsyncIterable
 from uuid import UUID
 
 from src.domain.entities import Category
@@ -10,16 +10,17 @@ class CategoryInteractor:
         self.data_provider = data_provider
 
     async def create_category(self, c: Category) -> Category:
-        return self.data_provider.create_category(c)
+        return await self.data_provider.create_category(c)
 
     async def get_category(self, cid: UUID) -> Category:
-        return self.data_provider.get_category(cid)
+        return await self.data_provider.get_category(cid)
 
-    async def get_categories(self, limit: int, offset: int = 0) -> Iterator[Category]:
-        return self.data_provider.get_categories(limit, offset)
+    async def get_categories(self, limit: int, offset: int = 0) -> AsyncGenerator["Category", None]:
+        async for category in self.data_provider.get_categories(limit, offset):
+            yield category
 
     async def update_category(self, c: Category) -> Category:
-        return  self.data_provider.update_category(c)
+        return  await self.data_provider.update_category(c)
 
     async def remove_category(self, cid: UUID) -> Category:
-        return self.data_provider.remove_category(cid)
+        return await self.data_provider.remove_category(cid)

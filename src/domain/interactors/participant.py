@@ -1,4 +1,4 @@
-from typing import List, Iterator
+from typing import Iterator, AsyncGenerator
 from uuid import UUID
 
 from src.domain.entities import Participant
@@ -11,16 +11,17 @@ class ParticipantInteractor:
         self.dataProvider: ParticipantDataProvider = data_provider
 
     async def create_participant(self, p: Participant) -> Participant:
-        return self.dataProvider.create_participant(p)
+        return await self.dataProvider.create_participant(p)
 
     async def get_participant(self, pid: UUID) -> Participant:
-        return self.dataProvider.get_participant(pid)
+        return await self.dataProvider.get_participant(pid)
 
-    async def get_participants(self, limit: int, offset: int) -> Iterator[Participant]:
-        return self.dataProvider.get_participants(limit, offset)
+    async def get_participants(self, limit: int, offset: int) -> AsyncGenerator[Participant]:
+        async for participant in self.dataProvider.get_participants(limit, offset):
+            yield participant
 
     async def update_participant(self, p: Participant) -> Participant:
-        return self.dataProvider.update_participant(p)
+        return await self.dataProvider.update_participant(p)
 
     async def remove_participant(self, pid: UUID) -> Participant:
-        return self.dataProvider.remove_participant(pid)
+        return await self.dataProvider.remove_participant(pid)

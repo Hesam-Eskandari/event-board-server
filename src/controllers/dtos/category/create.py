@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 
 from src.controllers.dtos.base import BaseDTO
 from src.domain.entities import Category
@@ -11,4 +12,5 @@ class CategoryCreateDTO(BaseDTO):
         c = Category()
         c.id = uuid.uuid7()
         c.title = self.title
+        c.created_at = datetime.now(timezone.utc)
         return c

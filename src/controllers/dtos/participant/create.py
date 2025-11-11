@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import uuid
 
 from src.controllers.dtos.base import BaseDTO
@@ -15,4 +16,5 @@ class ParticipantCreateDTO(BaseDTO):
         p.lastname = self.lastname
         p.image_url = self.imageUrl
         p.id = uuid.uuid7()
+        p.created_at = datetime.now(timezone.utc)
         return p

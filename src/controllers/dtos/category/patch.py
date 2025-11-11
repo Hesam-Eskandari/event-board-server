@@ -9,4 +9,5 @@ class CategoryPatchDTO(BaseDTO):
         c = Category()
         c.id = old_entity.id
         c.title = self.title if self.title is not None else old_entity.title
+        c.created_at = old_entity.created_at
         return c

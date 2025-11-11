@@ -1,52 +1,44 @@
-from datetime import datetime
-from typing import Dict
+from sqlalchemy import Column, Boolean, DateTime, UUID, String, ForeignKey, func
+from sqlalchemy.orm import relationship
 
-from src.domain.entities import Event, Category, Participant
-from src.domain.exceptions import CategoryNotFoundException, CategoriesMismatchException, ParticipantNotFoundException, \
-    ParticipantsMismatchException
+from src.domain.entities import Event
+from src.services.postgres.models import Base
 
 
-class EventModel:
-    id: int
-    title: str
-    start: datetime
-    end: datetime
-    category_id: int
-    participant_id: int
+class EventModel(Base):
+    __tablename__ = 'event'
+    id = Column(UUID, primary_key=True)
+    title = Column(String, nullable=False)
+    start = Column(DateTime(timezone=True), nullable=False)
+    end = Column(DateTime(timezone=True), nullable=False)
+    category_id = Column(UUID, ForeignKey("category.id"), nullable=False)
+    category = relationship("CategoryModel", back_populates="events")
+    participant_id = Column(UUID, ForeignKey("participant.id"), nullable=False)
+    participant = relationship("ParticipantModel", back_populates="events")
+    is_deleted = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     @staticmethod
-    def from_entity(entity: Event, categories: Dict[int, Category], participants: Dict[int, Participant]) -> EventModel:
-        existing_category = categories.get(entity.category.id)
-        if existing_category is None:
-            raise CategoryNotFoundException(f'category {entity.category.id} does not exist')
-        if existing_category != entity.category:
-            raise CategoriesMismatchException(f'found category with id {existing_category.id}, but other properties of the given category do not match')
-        existing_participant = participants.get(entity.participant.id)
-        if existing_participant is None:
-            raise ParticipantNotFoundException(f'participant {entity.participant.id} does not exist')
-        if existing_participant != entity.participant:
-            raise ParticipantsMismatchException(f'found participant with id {entity.participant.id} but other properties of the given participant do not match')
+    def from_entity(entity: Event) -> EventModel:
         model = EventModel()
         model.id = entity.id
         model.title = entity.title
         model.start = entity.start
         model.end = entity.end
-        model.category_id = entity.category.id
-        model.participant_id = entity.participant.id
+        model.category = entity.category
+        model.participant = entity.participant
+        model.created_at = entity.created_at
         return model
 
-    def to_entity(self, categories: Dict[int, Category], participants: Dict[int, Participant]) -> Event:
+    def to_entity(self) -> Event:
         entity = Event()
         entity.id = self.id
         entity.title = self.title
         entity.start = self.start
         entity.end = self.end
-        category = categories.get(self.category_id)
-        if category is None:
-            raise CategoryNotFoundException(f'category with id {self.category_id} not found')
-        participant = participants.get(self.participant_id)
-        if participant is None:
-            raise ParticipantNotFoundException(f'participant with id {self.participant_id} not found')
+        category = self.category.to_entity()
+        participant = self.participant.to_entity()
         entity.category = category
         entity.participant = participant
+        entity.created_at = self.created_at
         return entity

@@ -1,4 +1,4 @@
-from typing import Coroutine, Any, Iterator
+from typing import Coroutine, Any, Iterator, AsyncGenerator
 
 from fastapi import HTTPException, status
 
@@ -14,7 +14,8 @@ class CategoryErrorHandler:
             category = await category_async
         except CategoryNotFoundException as err:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
-        except Exception:
+        except Exception as err:
+            print(err)
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
         return category
 
@@ -29,14 +30,14 @@ class CategoryErrorHandler:
         return category
 
     @staticmethod
-    async def handle_read_all_async(categories_async: Coroutine[Any, Any, Iterator[Category]]) -> Iterator[Category]:
+    async def handle_read_all_async(categories_async: AsyncGenerator[Category, None]) -> AsyncGenerator[Category, None]:
         try:
-            categories = await categories_async
+            async for category in categories_async:
+                yield category
         except CategoryNotFoundException as err:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
-        except Exception:
+        except Exception as err:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
-        return categories
 
     @staticmethod
     async def handle_update_async(category_async: Coroutine[Any, Any, Category]) -> Category:

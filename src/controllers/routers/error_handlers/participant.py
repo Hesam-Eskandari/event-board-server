@@ -1,7 +1,8 @@
-from typing import Coroutine, Any, Iterator
+from typing import Coroutine, Any, Iterator, AsyncGenerator
 
 from fastapi import HTTPException, status
 
+from src.controllers.dtos import ParticipantReadDTO
 from src.domain.entities import Participant
 from src.domain.exceptions import ParticipantNotFoundException
 
@@ -29,14 +30,14 @@ class ParticipantErrorHandler:
         return participant
 
     @staticmethod
-    async def handle_read_all_async(participants_async: Coroutine[Any, Any, Iterator[Participant]]) -> Iterator[Participant]:
+    async def handle_read_all_async(participants_async: AsyncGenerator[Participant, None]) -> AsyncGenerator[Participant, None]:
         try:
-            participants = await participants_async
+            async for participant in participants_async:
+                yield participant
         except ParticipantNotFoundException as err:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(err))
         except Exception:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='unexpected error happened')
-        return participants
 
     @staticmethod
     async def handle_update_async(participant_async: Coroutine[Any, Any, Participant]) -> Participant:

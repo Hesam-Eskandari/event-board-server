@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 
@@ -6,6 +7,7 @@ class Participant:
     firstname: str
     lastname: str
     image_url: str
+    created_at: datetime
 
     def __eq__(self, other: 'Participant') -> bool:
         return self.id == other.id \
