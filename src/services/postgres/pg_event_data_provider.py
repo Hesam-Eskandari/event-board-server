@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.domain.entities import Event
-from src.domain.exceptions import EventNotFoundException
+from src.domain.exceptions import RecordNotFoundException
 from src.domain.interfaces import EventDataProvider
 from src.services.postgres.models import EventModel
 from src.services.postgres.pg_base import PgBase
@@ -41,7 +41,7 @@ class PgEventDataProvider(PgBase, EventDataProvider):
                 )
             model: EventModel | None = await session.scalar(stmt)
             if model is None:
-                raise EventNotFoundException(f"event {eid} not found")
+                raise RecordNotFoundException(f"event {eid} not found")
             return model.to_entity()
 
     async def get_events(self, limit: int, offset: int = 0) -> AsyncGenerator[Event]:
@@ -70,13 +70,13 @@ class PgEventDataProvider(PgBase, EventDataProvider):
                     selectinload(EventModel.category),
                     selectinload(EventModel.participant),
                 )
-                .values(**model.to_dict(exclude_id=True, exclude_fields=['is_deleted']))
+                .values(**model.to_dict(exclude_id=True, exclude_fields=['is_deleted', 'created_at']))
             .returning(EventModel)
             )
             result = await session.execute(stmt)
             updated_model: EventModel | None = result.scalar_one_or_none()
             if updated_model is None:
-                raise EventNotFoundException(f"event {e.id} not found")
+                raise RecordNotFoundException(f"event {e.id} not found")
             await session.commit()
             return updated_model.to_entity()
 
@@ -98,7 +98,7 @@ class PgEventDataProvider(PgBase, EventDataProvider):
             result = await session.execute(stmt)
             deleted_model: EventModel | None = result.scalar_one_or_none()
             if deleted_model is None:
-                raise EventNotFoundException(f"event {eid} not found")
+                raise RecordNotFoundException(f"event {eid} not found")
 
             await session.commit()
             return deleted_model.to_entity()

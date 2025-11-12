@@ -1,4 +1,4 @@
-from typing import Iterator, AsyncGenerator, AsyncIterable
+from typing import AsyncGenerator
 from uuid import UUID
 
 from src.domain.entities import Category

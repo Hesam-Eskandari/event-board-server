@@ -1,4 +1,4 @@
-class CategoriesMismatchException(Exception):
+class RecordNotFoundException(Exception):
     def __init__(self, message: str) -> None:
         self._message: str = message
 

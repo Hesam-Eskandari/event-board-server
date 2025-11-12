@@ -24,6 +24,7 @@ class PgBase:
                     await session.execute(text("SELECT 1"))
             async with self._session_maker() as session:
                 yield session
+        except OSError as err:
+            raise ConnectionError("unable to connect to database") from err
         except Exception as err:
-            print("db connection error", err)
-            raise ConnectionError('failed to establish database connection')
+            raise err
