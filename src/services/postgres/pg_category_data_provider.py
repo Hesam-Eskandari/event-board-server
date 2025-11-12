@@ -1,3 +1,4 @@
+import sys
 from typing import AsyncGenerator
 from uuid import UUID
 
@@ -31,6 +32,7 @@ class PgCategoryDataProvider(PgBase, CategoryDataProvider):
             return model.to_entity()
 
     async def get_categories(self, limit: int, offset: int = 0) -> AsyncGenerator["Category", None]:
+        limit = limit if limit > 0 else sys.maxsize
         session: AsyncSession
         async with self._setup_connection() as session:
             stmt = select(CategoryModel).where(CategoryModel.is_deleted.is_(False)).limit(limit).offset(offset)

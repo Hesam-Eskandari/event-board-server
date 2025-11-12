@@ -1,3 +1,4 @@
+import sys
 from typing import AsyncGenerator
 from uuid import UUID
 
@@ -45,6 +46,7 @@ class PgEventDataProvider(PgBase, EventDataProvider):
             return model.to_entity()
 
     async def get_events(self, limit: int, offset: int = 0) -> AsyncGenerator[Event]:
+        limit = limit if limit > 0 else sys.maxsize
         session: AsyncSession
         async with self._setup_connection() as session:
             stmt = select(EventModel)\

@@ -1,3 +1,4 @@
+import sys
 from typing import AsyncGenerator
 from uuid import UUID
 
@@ -33,6 +34,7 @@ class PgParticipantDataProvider(PgBase, ParticipantDataProvider):
 
 
     async def get_participants(self, limit: int, offset: int = 0) -> AsyncGenerator[Participant]:
+        limit = limit if limit > 0 else sys.maxsize
         session: AsyncSession
         async with self._setup_connection() as session:
             stmt = select(ParticipantModel).where(ParticipantModel.is_deleted.is_(False)).limit(limit).offset(offset)
