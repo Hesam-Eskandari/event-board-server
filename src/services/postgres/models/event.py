@@ -4,10 +4,10 @@ from sqlalchemy import Column, Boolean, DateTime, UUID, String, ForeignKey, func
 from sqlalchemy.orm import relationship
 
 from src.domain.entities import Event
-from src.services.postgres.models import Base
+from src.services.postgres.models import EventBoardBase
 
 
-class EventModel(Base):
+class EventModel(EventBoardBase):
     __tablename__ = 'event'
     id = Column(UUID, primary_key=True)
     title = Column(String, nullable=False)

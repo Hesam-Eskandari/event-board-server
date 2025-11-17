@@ -4,10 +4,10 @@ from sqlalchemy import String, Column, UUID, Boolean, DateTime, func
 from sqlalchemy.orm import relationship
 
 from src.domain.entities import Category
-from src.services.postgres.models import Base
+from src.services.postgres.models import EventBoardBase
 
 
-class CategoryModel(Base):
+class CategoryModel(EventBoardBase):
     __tablename__ = 'category'
     id = Column(UUID, primary_key=True)
     title = Column(String, nullable=False, unique=True)

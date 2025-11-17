@@ -2,6 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.controllers.middleware import ApplicationMiddleware, TenantMiddleware
 from src.controllers.routers import participant_controller, category_controller, event_controller
 from src.library import singleton
 
@@ -10,13 +11,18 @@ from src.library import singleton
 class Server:
     def __init__(self):
         self._app = FastAPI()
+
+
+    def _add_middlewares(self):
         self._app.add_middleware(
             CORSMiddleware,
-            allow_origins=["*"],  # or specify allowed origins
+            allow_origins=["*"],
             allow_credentials=True,
-            allow_methods=["*"],  # includes OPTIONS automatically
+            allow_methods=["*"],
             allow_headers=["*"],
         )
+        self._app.add_middleware(ApplicationMiddleware)
+        self._app.add_middleware(TenantMiddleware)
 
     def run(self):
 

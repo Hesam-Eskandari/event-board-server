@@ -1,6 +1,6 @@
 """ Models """
 
-from .base import Base
+from .base import EventBoardBase, TenantBase
 from .category import CategoryModel
 from .participant import ParticipantModel
 from .event import EventModel

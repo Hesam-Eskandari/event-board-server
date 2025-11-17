@@ -2,12 +2,12 @@ from fastapi import APIRouter, HTTPException, status, Response
 from fastapi_utils.cbv import cbv
 
 from src.controllers.dtos import CategoryReadDTO, CategoryCreateDTO, CategoryPatchDTO
-from src.controllers.routers import ErrorHandler
+from src.controllers.routers import ErrorHandler, RouterConfig
 from src.domain.interactors import CategoryInteractor
 from src.domain.interfaces import CategoryDataProvider
 from src.services import PgCategoryDataProvider
 
-router = APIRouter()
+router = RouterConfig.get_router()
 
 @cbv(router)
 class CategoryController:

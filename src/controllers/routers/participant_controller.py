@@ -1,14 +1,14 @@
 from typing import List
-from fastapi import APIRouter, HTTPException, status, Response
+from fastapi import HTTPException, status, Response
 from fastapi_utils.cbv import cbv
 
 from src.controllers.dtos import ParticipantReadDTO, ParticipantCreateDTO, ParticipantPatchDTO
-from src.controllers.routers import ErrorHandler
+from src.controllers.routers import ErrorHandler, RouterConfig
 from src.domain.interactors import ParticipantInteractor
 from src.domain.interfaces import ParticipantDataProvider
 from src.services import PgParticipantDataProvider
 
-router = APIRouter()
+router = RouterConfig.get_router()
 
 @cbv(router)
 class ParticipantController:

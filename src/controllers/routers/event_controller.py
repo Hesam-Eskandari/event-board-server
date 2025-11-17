@@ -4,13 +4,13 @@ from fastapi import APIRouter, HTTPException, status, Response
 from fastapi_utils.cbv import cbv
 
 from src.controllers.dtos import EventReadDTO, EventCreateDTO, EventPatchDTO
-from src.controllers.routers import ErrorHandler
+from src.controllers.routers import ErrorHandler, RouterConfig
 from src.domain.entities import Event, Category, Participant
 from src.domain.interactors import EventInteractor, CategoryInteractor, ParticipantInteractor
 from src.domain.interfaces import EventDataProvider, CategoryDataProvider, ParticipantDataProvider
 from src.services import PgDataBase
 
-router = APIRouter()
+router = RouterConfig.get_router()
 
 @cbv(router)
 class EventController:
