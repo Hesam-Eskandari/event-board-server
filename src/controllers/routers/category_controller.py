@@ -7,7 +7,7 @@ from src.domain.interactors import CategoryInteractor
 from src.domain.interfaces import CategoryDataProvider
 from src.services import PgCategoryDataProvider
 
-router = RouterConfig.get_router()
+router = RouterConfig.get_private_router()
 
 @cbv(router)
 class CategoryController:

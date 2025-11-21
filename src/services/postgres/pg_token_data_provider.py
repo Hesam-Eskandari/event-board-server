@@ -9,7 +9,7 @@ from src.services.postgres.models.token import TokenModel
 from src.services.postgres.pg_base import PgBase
 
 
-class TokenDataProvider(PgBase, TenantLookupTokenDataProvider):
+class PgTokenDataProvider(PgBase, TenantLookupTokenDataProvider):
 
     async def create_platform_tokens(self, tokens: PlatformTenantTokens) -> PlatformTenantTokens:
         session: AsyncSession

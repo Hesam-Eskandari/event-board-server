@@ -8,7 +8,7 @@ from src.domain.interactors import ParticipantInteractor
 from src.domain.interfaces import ParticipantDataProvider
 from src.services import PgParticipantDataProvider
 
-router = RouterConfig.get_router()
+router = RouterConfig.get_private_router()
 
 @cbv(router)
 class ParticipantController:

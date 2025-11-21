@@ -13,7 +13,7 @@ class RouterConfig:
         return APIRouter(prefix=RouterConfig._app_prefix, dependencies=[Depends(RouterConfig.load_app_path_param)])
 
     @staticmethod
-    def get_router() -> APIRouter:
+    def get_private_router() -> APIRouter:
         return APIRouter(prefix=RouterConfig._tenant_prefix, dependencies=[Depends(RouterConfig.load_app_path_param), Depends(RouterConfig.load_tenant_path_param)])
 
     @staticmethod

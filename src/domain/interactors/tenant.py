@@ -25,9 +25,9 @@ class TenantInteractor:
             return
         try:
             self._private_key = pyseto.Key.new(
-                version=TenantInteractor._pyseto_version,
+                version=self._pyseto_version,
                 purpose='public',
-                key=open(TenantInteractor._private_key_path, 'rb').read(),
+                key=open(self._private_key_path, 'rb').read(),
             )
         except OSError:
             raise FileNotFoundError('private key file not found')
@@ -37,9 +37,9 @@ class TenantInteractor:
             return
         try:
             self._public_key = pyseto.Key.new(
-                version=TenantInteractor._pyseto_version,
+                version=self._pyseto_version,
                 purpose='public',
-                key=open(TenantInteractor._public_key_path, 'rb').read(),
+                key=open(self._public_key_path, 'rb').read(),
             )
         except OSError:
             raise FileNotFoundError('private key file not found')
@@ -53,7 +53,7 @@ class TenantInteractor:
     async def encode_token(self, token: TenantLookupToken) -> str:
         await self.populate_private_key()
         payload: Dict[str, Any] = token.to_dict()
-        return pyseto.encode(self._private_key, payload).__str__()
+        return pyseto.encode(self._private_key, payload).decode("utf-8")
 
     async def generate_lookup_tokens_v1(self) -> PlatformTenantTokens:
         tokens = PlatformTenantTokens.generate()

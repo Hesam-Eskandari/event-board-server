@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.controllers.middleware import ApplicationMiddleware, TenantMiddleware
-from src.controllers.routers import participant_controller, category_controller, event_controller
+from src.controllers.routers import participant_controller, category_controller, event_controller, tenant_controller
 from src.library import singleton
 
 
@@ -40,4 +40,15 @@ class Server:
             event_controller.router,
             tags=["events"],
         )
+
+        self._app.include_router(
+            tenant_controller.public_router,
+            tags=["tenants public router"],
+        )
+
+        self._app.include_router(
+            tenant_controller.private_router,
+            tags=["tenants private router"],
+        )
+
         uvicorn.run(self._app, host='0.0.0.0', port=8000)

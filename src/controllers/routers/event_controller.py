@@ -1,6 +1,6 @@
 from typing import List, Union
 
-from fastapi import APIRouter, HTTPException, status, Response
+from fastapi import HTTPException, status, Response
 from fastapi_utils.cbv import cbv
 
 from src.controllers.dtos import EventReadDTO, EventCreateDTO, EventPatchDTO
@@ -10,7 +10,7 @@ from src.domain.interactors import EventInteractor, CategoryInteractor, Particip
 from src.domain.interfaces import EventDataProvider, CategoryDataProvider, ParticipantDataProvider
 from src.services import PgDataBase
 
-router = RouterConfig.get_router()
+router = RouterConfig.get_private_router()
 
 @cbv(router)
 class EventController:
