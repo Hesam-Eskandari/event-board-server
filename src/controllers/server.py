@@ -2,7 +2,6 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.controllers.middleware import ApplicationMiddleware, TenantMiddleware
 from src.controllers.routers import participant_controller, category_controller, event_controller, tenant_controller
 from src.library import singleton
 
@@ -21,8 +20,6 @@ class Server:
             allow_methods=["*"],
             allow_headers=["*"],
         )
-        self._app.add_middleware(ApplicationMiddleware)
-        self._app.add_middleware(TenantMiddleware)
 
     def run(self):
 
@@ -50,5 +47,5 @@ class Server:
             tenant_controller.private_router,
             tags=["tenants private router"],
         )
-
+        self._add_middlewares()
         uvicorn.run(self._app, host='0.0.0.0', port=8000)

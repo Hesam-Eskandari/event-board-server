@@ -1,3 +1,4 @@
+import json
 from typing import Dict, Any
 
 import pyseto
@@ -47,7 +48,7 @@ class TenantInteractor:
     async def verify_token_and_decode(self, token: str) -> TenantLookupToken:
         await self.populate_public_key()
         decoded = pyseto.decode(self._public_key, token)
-        payload: Dict[str, Any] = decoded.payload
+        payload: Dict[str, Any] = json.loads(decoded.payload.decode('utf-8'))
         return TenantLookupToken.from_dict(payload)
 
     async def encode_token(self, token: TenantLookupToken) -> str:
