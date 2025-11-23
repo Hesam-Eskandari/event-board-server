@@ -36,8 +36,8 @@ class PgTokenDataProvider(PgBase, TenantLookupTokenDataProvider):
         session: AsyncSession
         async with self._setup_connection() as session:
             stmt = select(TokenModel)\
-                .where(TokenModel.tenant_id.is_(lookup_token.tenant_id))\
-                .where(TokenModel.application.is_(lookup_token.app.value))
+                .where(TokenModel.tenant_id == lookup_token.tenant_id)\
+                .where(TokenModel.application == lookup_token.app.value)
             res: ScalarResult[TokenModel] = await session.scalars(stmt)
             models: List[TokenModel] = list(res.all())
             if len(models) != 3:
